@@ -1,0 +1,142 @@
+---
+title: "ESM 201 Assignment 2"
+author: "Sidney Gerst"
+date: "March 15, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include = FALSE }
+#load the packages
+library(tidyverse)
+library(RColorBrewer)
+
+#load the csvs
+fertilizer <- read_csv("fertilizer.csv")
+
+grain <- read_csv("grain.csv")
+
+
+
+```
+
+###1. Patters in yield over time
+
+a. plot of yield vs time for each grain
+```{r echo = FALSE }
+
+#data wrangling
+grain_yield <- grain %>%
+  select(year, commodity, yield) %>%
+  filter(yield != "NA")
+
+#create the plots
+ggplot(grain_yield, aes(x = year, y = yield, color = commodity)) +
+  geom_line() +
+  theme_classic() +
+  scale_color_discrete(name = "Commodity") +
+  facet_wrap(~ commodity, scale = "free") +
+  labs(title = "Yield of Four Commodity Grains Over Time",
+    x = "Year",
+       y = "Yield (Bushels per Acre)")
+
+
+```
+
+**Figure 1.** The yield of four commodity grains grown in the United States in bushels per acre from 1866-2018 (Barley, Corn, and Oats) and 1925-2018 (Sorghum). 
+
+
+b. Describe the statistical trend for each grain
+
+* Barley: There is a fairly flat linear lower plateau that increases drastically in the 1950's that shows an exponential trend.
+
+* Corn:  There is a relatively flat linear lower plateau that increases dramatically in the 1950's that represents an exopoential trend.
+
+* Oats: The curve for Oats looks like the very early stages of the exponential curve. It's not very steep and there is a bit of variation between 1866 and 1950 before it shoots off. 
+
+Sorghum: The sorghum curve is a logistic trend because the beginning of this curve is low around 1925 and increases in the 1950's and levels off at the 1970's. 
+
+
+###2. Fertilizer Use
+
+a. Finalized fertilizer plot
+
+```{r echo = FALSE }
+#wrangle the data
+fertilizer_use <- fertilizer %>%
+  rename(Fertilizer = fertilizer) %>%
+  filter(ppa != "NA") %>%
+  group_by(Fertilizer)
+
+
+#create the plot
+ggplot(fertilizer_use, aes(x = year, y = ppa, color = Fertilizer))+
+  geom_point() +
+  theme_classic() +
+  scale_color_discrete(name = "Fertilizer",
+                       labels = c("Nitrogen", "Phosphate", "Potassium")) +
+  theme(axis.text.x = element_text(angle = 30))+
+  facet_wrap(~ crop, scale = "free")+
+  labs(title = "Fertilizer Use over Time",
+       x = "Year",
+       y = "Pounds of Fertilizer Applied per Acre")
+
+```
+
+**Figure 2.** Pounds of three different kinds of fertilizer (Nitrogen, Phosphate, and Potassium) applied to per acre of corn, wheat, and soybeans from 1964-2016. 
+
+b. Describe the fertilizer use for each crop:
+
+* Corn: Corn requires much more nitrogen than the other two crops. It does not perform nitrogen fixation, so it is limited by the amount of nitrogen in the soil. 
+
+* Soybeans: Soybeans have the ability to fix nitrogen in the soil, so they need the least amount of nitrogen fertilizer. Because of this they are limited by phosphate and require the most phosphate fertilizer of the three crops. 
+
+* Wheat: Wheat requires the least total fertilizer out of the three crops, but is still limited by nitrogen with extra nitrogen fertilizer added. 
+
+c. Fertilizer trends in corn:
+
+* Corn requires the most nitrogen of the three crops. It has short roots that cannot reach in the soil to fix the nitrogen that is down there. This makes nitrogen a limiting factor in corn growth where a larger yield would require more nitrogen added to the soil. Over time so much corn has been planted using up what little nitrogen there was, requiring an increase in nitrogen through the years. 
+
+[Source: Nitrogen Application Timing in Corn Production
+Crop Insights by Steve Butzen, Agronomy Information Manager](https://www.pioneer.com/home/site/us/agronomy/library/nitrogen-application-timing/)
+
+
+###3. Case Study: Corn yield over fertilizer use
+
+a. corn plot
+
+```{r echo = FALSE}
+
+#merge the two data sets together by corn
+grain_corn <- grain %>%
+  select(year, commodity, yield) %>%
+  filter(commodity == "Corn")
+
+fertilizer_corn <- fertilizer %>%
+  filter(crop == "Corn", ppa != "NA") %>%
+  rename(commodity = crop)
+
+merge_corn <- merge(grain_corn, fertilizer_corn, by = c("commodity", "year"))
+
+#plot the yield of corn by the amount of fertilizer applied
+ggplot(merge_corn, aes(x = yield, y = ppa, color = year)) +
+  geom_point() +
+  theme_classic() +
+  scale_color_continuous(name = "Year") +
+  facet_wrap(~ fertilizer, scale = "free") +
+  labs(title = "Yield of Corn with Fertilizer use from 1964-2016",
+       x = "Yield (Bushels per Acre)",
+       y = "Pounds of Fertilizer Applied per Acre")
+
+
+```
+
+**Figure 3.** The yield of corn in bushels per acre given the three types of fertilizer (Nitrogen, Phosphate, Potassium) applied by pounds per acre from 1964 - 2016. 
+
+
+b. Relationship between yield and fertilizer of corn
+
+* There is a positive linear relationship between yield and fertilizer use for nitrogen and potassium. Nitrogen has the largest increase in use and yield. Potassium reaches a plateau in fertlizer use around the 1980's, but yield continues to increase. There is no positive linear relationship bewteen the use of phosphate fertilizer and yield. The use of phosphate begins to decrease around the 1990's with a small increase past 2010. 
