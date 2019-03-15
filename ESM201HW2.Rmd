@@ -1,0 +1,61 @@
+---
+title: "ESM201HW2"
+author: "Sidney Gerst"
+date: "March 11, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include = FALSE}
+#load packages
+
+library(tidyverse)
+
+
+
+
+#read in files
+fertilizer <- read_csv("fertilizer.csv")
+
+grain <- read_csv("grain.csv")
+
+```
+
+###TASK 1. Patterns in yield over time
+
+a. Create a finalized plot of fertilizer use vs time for each of the crops
+```{r echo = FALSE}
+
+#wrangle the data
+grain_yvt <- grain %>%
+  select(year, commodity, yield) %>%
+  filter(yield != "NA")
+
+#load the png
+barley <- "barley.png"
+
+#visualize the data
+crop_plot <- ggplot(grain_yvt, aes(x = year, y = yield, color = commodity)) +
+  geom_line() +
+  facet_wrap(~ commodity, scale = "free") +
+  scale_color_discrete(name = "Crop") +
+  theme_classic() +
+  labs(x = "Year",
+       y = "Yield (Bushels per acre)")
+
+crop_plot
+
+#animate the data
+crop_animate <- animate(crop_plot, nframes = 50, renderer = gifski_renderer("Sidney_Gerst_extra1.gif"))
+
+
+
+```
+
+**Figure 1. Crop Yield Over Time** 
+
+
+b. Describe the statistical model for each grain that describes the treend seen
